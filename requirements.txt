@@ -8,6 +8,7 @@ langgraph==1.1.10
 langchain-core==1.6.1
 langchain-community==0.4.2
 langchain-google-genai==4.4.0
+langchain-groq==1.1.3
 langchain-tavily==0.2.18
 langchain-pinecone==0.2.13
 langchain-text-splitters==1.1.2

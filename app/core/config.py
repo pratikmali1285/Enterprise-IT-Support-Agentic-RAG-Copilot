@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     pinecone_namespace: str = "company-it-kb"
     embedding_model: str = "gemini-embedding-001"
     gemini_model: str = "gemini-3.5-flash"
+    groq_model: str = "openai/gpt-oss-20b"
     top_k: int = 4
     max_retries: int = 1
     admin_api_key: str = "change-me"
