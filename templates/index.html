@@ -3,85 +3,90 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
   <title>{{ app_name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" />
   <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
-  <div class="shell">
-    <aside class="sidebar">
-      <div>
-        <div class="brand-badge">FDE Project</div>
-        <h1>IT Support<br/>Agentic RAG</h1>
-        <p class="muted">Private company knowledge first. External web only when evidence is weak.</p>
-      </div>
+  <header class="header">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h4v4H5zM15 15h4v4h-4zM7 9v4a2 2 0 0 0 2 2h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>IT Support Copilot</span>
+    </div>
+    <nav class="header-actions">
+      <button id="newChat" class="btn ghost" type="button">New chat</button>
+      <button id="openUpload" class="btn ghost" type="button">Add document</button>
+      <button id="toggleTrace" class="btn ghost only-narrow" type="button" aria-expanded="false" aria-controls="tracePanel">Route</button>
+      <button id="themeToggle" class="btn icon" type="button" aria-label="Switch theme">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </button>
+    </nav>
+  </header>
 
-      <div class="workflow-card">
-        <h3>LangGraph Workflow</h3>
-        <div class="flow-step">1. Route question</div>
-        <div class="flow-step">2. Retrieve private KB</div>
-        <div class="flow-step">3. Grade evidence</div>
-        <div class="flow-step">4. Web fallback if weak</div>
-        <div class="flow-step">5. Rewrite & retry</div>
-        <div class="flow-step">6. Grounded answer</div>
-      </div>
-
-      <button id="openUpload" class="secondary-btn">+ Add Company Document</button>
-    </aside>
-
-    <main class="main">
-      <header class="topbar">
-        <div>
-          <span class="status-dot"></span>
-          <span>Enterprise Knowledge Copilot</span>
-        </div>
-        <span class="pill">Agentic RAG</span>
-      </header>
-
-      <section id="chat" class="chat-area">
-        <div class="message assistant">
-          <div class="avatar">AI</div>
-          <div class="bubble">
-            <strong>How can I help with IT support?</strong>
-            <p>Try: “How do I connect to the company VPN?” or ask a question that may require current external vendor information.</p>
+  <div class="app">
+    <main class="chat-pane">
+      <section id="chat" class="chat" aria-live="polite" aria-label="Conversation">
+        <div id="thread" class="thread">
+          <div id="empty" class="empty-state">
+            <h1>What do you need help with?</h1>
+            <p>Answers come from your company's IT knowledge base first. The web is used only when the knowledge base falls short.</p>
+            <div class="examples">
+              <button class="example" type="button">How do I connect to the company VPN?</button>
+              <button class="example" type="button">What is our password reset policy?</button>
+              <button class="example" type="button">What is the latest Microsoft Teams outage guidance?</button>
+            </div>
           </div>
         </div>
       </section>
 
-      <section class="composer-wrap">
-        <div class="examples">
-          <button class="example">How do I connect to the company VPN?</button>
-          <button class="example">What is our password reset policy?</button>
-          <button class="example">What is the latest Microsoft Teams outage guidance?</button>
-        </div>
+      <div class="composer-wrap">
         <form id="chatForm" class="composer">
-          <textarea id="question" rows="2" placeholder="Ask an IT support question..." required></textarea>
-          <button type="submit" class="send-btn">Ask Agent</button>
+          <textarea id="question" rows="1" maxlength="3000" placeholder="Ask an IT support question" aria-label="Your question" required></textarea>
+          <button id="sendBtn" type="submit" class="btn primary">Ask</button>
         </form>
-      </section>
+        <p class="hint">Enter sends. Shift+Enter adds a line.</p>
+      </div>
     </main>
 
-    <aside class="trace-panel">
-      <h2>Agent Trace</h2>
-      <p class="muted">Watch LangGraph decisions while the request runs.</p>
-      <div id="trace" class="trace-list"><div class="empty">No request yet.</div></div>
-      <div class="source-box">
-        <span>Final Source</span>
-        <strong id="sourceUsed">—</strong>
+    <aside id="tracePanel" class="trace-panel" aria-label="Agent route">
+      <h2>Agent route</h2>
+      <p class="muted">The decisions the agent made for your last question.</p>
+      <ol id="trace" class="route"><li class="route-empty">Ask a question to see how the agent finds its answer.</li></ol>
+      <div class="answered-from">
+        <span class="muted">Answered from</span>
+        <strong id="sourceUsed" class="chip">None yet</strong>
       </div>
     </aside>
   </div>
 
-  <div id="uploadModal" class="modal hidden">
-    <div class="modal-card">
-      <div class="modal-head"><h2>Ingest Company Document</h2><button id="closeUpload">×</button></div>
-      <p class="muted">Upload PDF, TXT, Markdown, or DOCX. The document is chunked, embedded, and indexed into Pinecone.</p>
-      <input id="adminKey" type="password" placeholder="Admin API key" />
-      <input id="fileInput" type="file" accept=".pdf,.txt,.md,.docx" />
-      <button id="uploadBtn" class="send-btn full">Index Document</button>
-      <div id="uploadStatus" class="upload-status"></div>
-    </div>
-  </div>
+  <dialog id="uploadModal" class="modal">
+    <form method="dialog" class="modal-card" id="uploadForm">
+      <div class="modal-head">
+        <h2>Add a company document</h2>
+        <button id="closeUpload" class="btn icon" type="button" aria-label="Close">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <p class="muted">PDF, TXT, Markdown or DOCX. The document is split into chunks and added to the knowledge base.</p>
+      <label class="field">
+        <span>Admin key</span>
+        <input id="adminKey" type="password" autocomplete="off" />
+      </label>
+      <label id="dropzone" class="dropzone">
+        <input id="fileInput" type="file" accept=".pdf,.txt,.md,.docx" />
+        <strong id="fileName">Choose a file or drop it here</strong>
+        <span class="muted">Up to the size your server allows</span>
+      </label>
+      <button id="uploadBtn" type="button" class="btn primary full">Add to knowledge base</button>
+      <div id="uploadStatus" class="upload-status" role="status"></div>
+    </form>
+  </dialog>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js" integrity="sha384-/TQbtLCAerC3jgaim+N78RZSDYV7ryeoBCVqTuzRrFec2akfBkHS7ACQ3PQhvMVi" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js" integrity="sha384-+VfUPEb0PdtChMwmBcBmykRMDd+v6D/oFmB3rZM/puCMDYcIvF968OimRh4KQY9a" crossorigin="anonymous"></script>
   <script src="/static/js/app.js"></script>
 </body>
 </html>
