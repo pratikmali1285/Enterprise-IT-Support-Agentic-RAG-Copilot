@@ -1,6 +1,5 @@
 import logging
 from typing import Literal
-from langchain_core.exceptions import ModelRateLimitError
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
 from langchain_tavily import TavilySearch
@@ -18,19 +17,20 @@ _web_search = None
 def llm():
     global _llm
     if _llm is None:
-        if not settings.gemini_api_key:
-            raise RuntimeError("GEMINI_API_KEY is missing")
-        _llm = ChatGoogleGenerativeAI(
-            model=settings.gemini_model,
-            temperature=0,
-            google_api_key=settings.gemini_api_key,
-            max_retries=1,
-        )
+        models = []
         if settings.groq_api_key:
-            _llm = _llm.with_fallbacks(
-                [ChatGroq(model=settings.groq_model, temperature=0, api_key=settings.groq_api_key)],
-                exceptions_to_handle=(ModelRateLimitError,),  # 429 only
-            )
+            models.append(ChatGroq(model=settings.groq_model, temperature=0, api_key=settings.groq_api_key, max_retries=1))
+        if settings.gemini_api_key:
+            models.append(ChatGoogleGenerativeAI(
+                model=settings.gemini_model,
+                temperature=0,
+                google_api_key=settings.gemini_api_key,
+                max_retries=1,
+            ))
+        if not models:
+            raise RuntimeError("GROQ_API_KEY or GEMINI_API_KEY is missing")
+        # Groq first; Gemini only if Groq fails for any reason (429, 5xx, bad JSON)
+        _llm = models[0].with_fallbacks(models[1:])
     return _llm
 
 def web_search_tool():
